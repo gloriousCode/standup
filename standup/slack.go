@@ -18,11 +18,23 @@ func RenderSlack(dateDDMMYYYY string, e Entry) string {
 		b.WriteString("Date: " + dateDDMMYYYY + "\n\n")
 	}
 
+	b.WriteString("Start time\n")
+	b.WriteString(formatNotesSlack(e.StartTime))
+	b.WriteString("\n\n")
+
+	b.WriteString("End time\n")
+	b.WriteString(formatNotesSlack(e.EndTime))
+	b.WriteString("\n\n")
+
+	b.WriteString("Significant interruptions\n")
+	b.WriteString(formatNotesSlack(e.SignificantInterruptions))
+	b.WriteString("\n\n")
+
 	b.WriteString("What I did today\n")
 	b.WriteString(formatNotesSlack(e.DidToday))
 	b.WriteString("\n\n")
 
-	b.WriteString("Issues / help needed\n")
+	b.WriteString("Issues / help needed / Notes\n")
 	b.WriteString(formatNotesSlack(e.Issues))
 
 	return b.String()

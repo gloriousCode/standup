@@ -12,6 +12,10 @@ import (
 
 // Entry represents a single daily standup report.
 type Entry struct {
+	StartTime                string
+	EndTime                  string
+	SignificantInterruptions string
+
 	DidToday string
 	Issues   string
 }
@@ -29,6 +33,21 @@ const noteIconPrefix = "🌞"
 func Prompt(r io.Reader, w io.Writer) (Entry, error) {
 	br := bufio.NewReader(r)
 
+	start, err := promptOne(br, w, "What time did you start?")
+	if err != nil {
+		return Entry{}, err
+	}
+
+	end, err := promptOne(br, w, "What time did you end?")
+	if err != nil {
+		return Entry{}, err
+	}
+
+	interruptions, err := promptOne(br, w, "Any significant interruptions?")
+	if err != nil {
+		return Entry{}, err
+	}
+
 	did, err := promptOne(br, w, "What did you do today?")
 	if err != nil {
 		return Entry{}, err
@@ -39,7 +58,13 @@ func Prompt(r io.Reader, w io.Writer) (Entry, error) {
 		return Entry{}, err
 	}
 
-	return Entry{DidToday: did, Issues: issues}, nil
+	return Entry{
+		StartTime:                start,
+		EndTime:                  end,
+		SignificantInterruptions: interruptions,
+		DidToday:                 did,
+		Issues:                   issues,
+	}, nil
 }
 
 func promptOne(br *bufio.Reader, w io.Writer, question string) (string, error) {
@@ -101,6 +126,9 @@ func RenderTable(e Entry) string {
 		{Name: "Notes", WidthMax: 60, WidthMaxEnforcer: text.WrapSoft},
 	})
 
+	tw.AppendRow(table.Row{"Start time", formatNotes(e.StartTime)})
+	tw.AppendRow(table.Row{"End time", formatNotes(e.EndTime)})
+	tw.AppendRow(table.Row{"Significant interruptions", formatNotes(e.SignificantInterruptions)})
 	tw.AppendRow(table.Row{"What I did today", formatNotes(e.DidToday)})
 	tw.AppendRow(table.Row{"Issues / help needed", formatNotes(e.Issues)})
 	return tw.Render()
@@ -134,6 +162,9 @@ func RenderMarkdown(dateDDMMYYYY string, e Entry) string {
 	thingWidth := len(headers[0])
 	notesWidth := len(headers[1])
 	rows := [][2]string{
+		{"Start time", formatNotesMarkdown(e.StartTime)},
+		{"End time", formatNotesMarkdown(e.EndTime)},
+		{"Significant interruptions", formatNotesMarkdown(e.SignificantInterruptions)},
 		{"What I did today", formatNotesMarkdown(e.DidToday)},
 		{"Issues / help needed", formatNotesMarkdown(e.Issues)},
 	}
